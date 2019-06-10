@@ -1,0 +1,20 @@
+service: bob-hunts # NOTE: update this with your service name
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  profile: pasley_hill_admin
+
+
+functions:
+  hunt-objectives:
+    handler: handler.huntObjectives
+    environment: ${file(env.yml):${self:custom.stage}, file(env.yml):dev}
+    events:
+      - http:
+          path: huntObjectives
+          method: get
+          cors: true

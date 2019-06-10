@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "commonjs"
+    },
+    "exclude": [
+        "node_modules"
+    ],
+    "esversion": 6
+}
