@@ -6,3 +6,5 @@ jspm_packages
 .serverless
 env.yml
 bob-secret-6c6870073aa2.json
+.idea
+.idea/*

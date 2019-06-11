@@ -2,17 +2,34 @@ service: bob-hunts # NOTE: update this with your service name
 
 custom:
   stage: ${opt:stage, self:provider.stage}
+  bucket: ${file(env.yml):${self:custom.stage}.bob_bucket, file(env.yml):dev.bob_bucket}
 
 provider:
   name: aws
   runtime: nodejs8.10
   profile: pasley_hill_admin
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:PutObjectAcl
+        - s3:getObject
+      Resource: "arn:aws:s3:::${self:custom.bucket}/*"
 
 
 functions:
-  hunt-objectives:
-    handler: handler.huntObjectives
+  huntObjectives:
+    handler: hunts.huntObjectives
     environment: ${file(env.yml):${self:custom.stage}, file(env.yml):dev}
+    events:
+      - http:
+          path: huntObjectives
+          method: get
+          cors: true
+  huntMediaUploadUrl:
+    handler: hunters.huntMediaUploadUrl
+    environment:
+      bob_bucket: ${self:custom.bucket}
     events:
       - http:
           path: huntObjectives
