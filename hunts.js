@@ -90,26 +90,35 @@ module.exports.doesHunterExist = async (event, context) =>
   return response;
 }
 
+/**
+ * sls invoke local --f addHuntSubmission -l --data '{"body":{\email"\:\"chrishill9@gmail.com\"} }'
+ */
 module.exports.addHuntSubmission = async (event,context) => 
 {
 
-  const dataSample = {
-    "range": "Sheet1!A1:E1",
-    "majorDimension": "ROWS",
-    "values": [
-      ["Door", "$15", "2", "3/15/2016"],
-      ["Engine", "$100", "1", "3/20/2016"],
-    ],
+  const parsedBody = JSON.parse(event.body);
+  console.log("DATA SUBMITTED: ",parsedBody);
+
+  const doc = new GoogleSpreadSheet(SHEETS_KEY);
+  await promisify(doc.useServiceAccountAuth)(creds);
+  const info  = await promisify(doc.getInfo)();
+  const sheet = info.worksheets[2];
+
+
+  /*
+  const test = {
+    team: "A",
+    objectivename:"The Statue",
+    name: "Christopher Hill",
+    email: "chrishill9@gmail.com",
+    notes: "super sucky",
+    media: "link to thing"
   };
+  */
 
-  let url = googleSheetsUrl("/values/submissions!A1:E1:append");
-
-  console.log(url);
-
-  const gResponse   = await fetch( url, { method: "POST", body: JSON.stringify(dataSample) } );
-  const gParsed     = await gResponse.json();
-
-  console.log(gParsed);
+  await promisify(sheet.addRow)(parsedBody);
+  response.body = JSON.stringify({status:"success"});
+  return response;
 
 }
 

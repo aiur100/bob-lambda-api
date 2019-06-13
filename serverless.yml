@@ -40,7 +40,7 @@ functions:
     events:
       - http:
           path: addHuntSubmission
-          method: get
+          method: post
           cors: true               
   huntMediaUploadUrl:
     handler: hunters.huntMediaUploadUrl
