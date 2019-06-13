@@ -1,7 +1,10 @@
 'use strict';
 
 const fetch           = require("node-fetch");
-const GOOGLE_SHEETS   = "https://sheets.googleapis.com/v4/spreadsheets/";
+const GoogleSpreadSheet = require("google-spreadsheet");
+const { promisify }     = require("util");
+const creds             = require('./client_secret.json');
+const GOOGLE_SHEETS     = "https://sheets.googleapis.com/v4/spreadsheets/";
 const SHEETS_KEY      = process.env.google_sheets_id;
 const GOOGLE_API_KEY  = process.env.google_api_key;
 const APP_CORS_HEADER = {
@@ -29,42 +32,27 @@ function googleSheetsUrl(endpoint="",queryParams=[])
     }
 }
 
-async function huntObjects()
+function huntObjects(rows)
 {
-  const gApiUrl     = googleSheetsUrl("/values/objectives!A:D");
-  const gResponse   = await fetch( gApiUrl );
-  const gParsed     = await gResponse.json();
-
-  const objectives  = gParsed.values.map((record) => 
-  {
-    const dataMap     = {};
-    dataMap[gParsed.values[0][1]] = record[1];
-    dataMap[gParsed.values[0][2]] = record[2];
-    dataMap[gParsed.values[0][3]] = record[3];
-    return dataMap;
-  });
-  //remove header row.
-  objectives.splice(0,1);
-  return objectives;
+  //console.log(rows[0].nameofobjective);
+    return rows.map( currentRow => {
+      return {
+        name: currentRow.nameofobjective,
+        description: currentRow.descriptionofobjective
+      };
+    });
 }
 
-async function hunters()
+function hunters(rows)
 {
-  const gApiUrl     = googleSheetsUrl("/values/Hunters!A:D");
-  const gResponse   = await fetch( gApiUrl );
-  const gParsed     = await gResponse.json();
-
-  const hunters  = gParsed.values.map((record) => 
-  {
-    const dataMap     = {};
-    dataMap[gParsed.values[0][0]] = record[0];
-    dataMap[gParsed.values[0][1]] = record[1];
-    dataMap[gParsed.values[0][2]] = record[2];
-    return dataMap;
+  
+  return rows.map( currentRow => {
+    return {
+      name: currentRow.name,
+      email: currentRow.email,
+      team: currentRow.team
+    };
   });
-  //remove header row.
-  hunters.splice(0,1);
-  return hunters;
 }
 
 /**
@@ -75,9 +63,14 @@ module.exports.doesHunterExist = async (event, context) =>
   const parsedBody = JSON.parse(event.body);
   console.log("DATA SUBMITTED: ",parsedBody);
 
-  const listOfHunters = await hunters();
-  console.log("LIST OF HUNTERS: ",JSON.stringify(listOfHunters,null,2));
-
+  const doc = new GoogleSpreadSheet(SHEETS_KEY);
+  await promisify(doc.useServiceAccountAuth)(creds);
+  const info  = await promisify(doc.getInfo)();
+  const sheet = info.worksheets[1];
+  const rows  = await promisify(sheet.getRows)({
+    offset: 1
+  });
+  const listOfHunters = hunters(rows);
   let result        = { exists: false };
   response.statusCode = 404;
 
@@ -123,8 +116,15 @@ module.exports.addHuntSubmission = async (event,context) =>
 module.exports.huntObjectives = async (event, context) => 
 {
 
-  const objectives = await huntObjects();
-  response.body = JSON.stringify(objectives,null,2);
-  return response;
+  const doc = new GoogleSpreadSheet(SHEETS_KEY);
+  await promisify(doc.useServiceAccountAuth)(creds);
+  const info  = await promisify(doc.getInfo)();
+  console.log("WORKSHEETS: ",JSON.stringify(info.worksheets,null,2));
+  const sheet = info.worksheets[0];
+  const rows  = await promisify(sheet.getRows)({
+    offset: 1
+  });
+  response.body = JSON.stringify(huntObjects(rows));
+ return response;
 
 };

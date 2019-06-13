@@ -5,6 +5,6 @@ jspm_packages
 # Serverless directories
 .serverless
 env.yml
-bob-secret-6c6870073aa2.json
+client_secret.json
 .idea
 .idea/*
