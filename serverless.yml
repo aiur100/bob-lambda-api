@@ -26,12 +26,28 @@ functions:
           path: huntObjectives
           method: get
           cors: true
+  doesHunterExist:
+    handler: hunts.doesHunterExist
+    environment: ${file(env.yml):${self:custom.stage}, file(env.yml):dev}
+    events:
+      - http:
+          path: doesHunterExist
+          method: post
+          cors: true 
+  addHuntSubmission:
+    handler: hunts.addHuntSubmission
+    environment:  ${file(env.yml):${self:custom.stage}, file(env.yml):dev}
+    events:
+      - http:
+          path: addHuntSubmission
+          method: get
+          cors: true               
   huntMediaUploadUrl:
     handler: hunters.huntMediaUploadUrl
     environment:
       bob_bucket: ${self:custom.bucket}
     events:
       - http:
-          path: huntObjectives
+          path: huntMediaUploadUrl
           method: get
           cors: true
