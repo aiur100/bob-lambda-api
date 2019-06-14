@@ -38,7 +38,8 @@ function huntObjects(rows)
     return rows.map( currentRow => {
       return {
         name: currentRow.nameofobjective,
-        description: currentRow.descriptionofobjective
+        description: currentRow.descriptionofobjective,
+        media: currentRow.mediatype
       };
     });
 }
@@ -104,18 +105,6 @@ module.exports.addHuntSubmission = async (event,context) =>
   const info  = await promisify(doc.getInfo)();
   const sheet = info.worksheets[2];
 
-
-  /*
-  const test = {
-    team: "A",
-    objectivename:"The Statue",
-    name: "Christopher Hill",
-    email: "chrishill9@gmail.com",
-    notes: "super sucky",
-    media: "link to thing"
-  };
-  */
-
   await promisify(sheet.addRow)(parsedBody);
   response.body = JSON.stringify({status:"success"});
   return response;
@@ -125,15 +114,30 @@ module.exports.addHuntSubmission = async (event,context) =>
 module.exports.huntObjectives = async (event, context) => 
 {
 
+  const team = event.queryStringParameters.team;
   const doc = new GoogleSpreadSheet(SHEETS_KEY);
   await promisify(doc.useServiceAccountAuth)(creds);
   const info  = await promisify(doc.getInfo)();
   console.log("WORKSHEETS: ",JSON.stringify(info.worksheets,null,2));
-  const sheet = info.worksheets[0];
-  const rows  = await promisify(sheet.getRows)({
+  const objectiveSheet = info.worksheets[0];
+  const objectiveRows  = await promisify(objectiveSheet.getRows)({
     offset: 1
   });
-  response.body = JSON.stringify(huntObjects(rows));
+  const submissionsSheet = info.worksheets[2];
+  const submissionRows  = await promisify(submissionsSheet.getRows)({
+    query: `team = ${team}`
+  });
+  const submissions = submissionRows.map(aSubmission => {
+        return {
+            name: aSubmission.objectivename,
+            team: aSubmission.team,
+            media: aSubmission.media
+        };
+  });
+  response.body = JSON.stringify({
+    objectives: huntObjects(objectiveRows),
+    submitted: submissions
+  });
  return response;
 
 };
