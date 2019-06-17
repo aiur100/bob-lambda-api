@@ -1,13 +1,10 @@
 'use strict';
 
-const fetch           = require("node-fetch");
 const GoogleSpreadSheet = require("google-spreadsheet");
 const { promisify }     = require("util");
 const creds             = require('./client_secret.json');
-const GOOGLE_SHEETS     = "https://sheets.googleapis.com/v4/spreadsheets/";
-const SHEETS_KEY      = process.env.google_sheets_id;
-const GOOGLE_API_KEY  = process.env.google_api_key;
-const APP_CORS_HEADER = {
+const SHEETS_KEY        = process.env.google_sheets_id;
+const APP_CORS_HEADER   = {
   "Content-Type" : "text/plain",
   "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
   "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
@@ -17,20 +14,6 @@ const response = {
   headers: APP_CORS_HEADER,
   body: ""
 };
-
-function googleSheetsUrl(endpoint="",queryParams=[])
-{
-    let baseUrl = GOOGLE_SHEETS+SHEETS_KEY+endpoint+"?key="+GOOGLE_API_KEY;
-    if(queryParams.length > 0){
-        return queryParams.reduce((finalUrl,currentQuery) => {
-            return finalUrl + "&" + currentQuery;
-        },baseUrl);
-    }
-    else
-    {
-      return GOOGLE_SHEETS+SHEETS_KEY+endpoint+"?key="+GOOGLE_API_KEY+"&valueRenderOption=FORMATTED_VALUE";
-    }
-}
 
 function huntObjects(rows)
 {
@@ -105,6 +88,20 @@ module.exports.addHuntSubmission = async (event,context) =>
   const info  = await promisify(doc.getInfo)();
   const sheet = info.worksheets[2];
 
+  /*
+  const submissionRows  = await promisify(sheet.getRows)({
+    query: `team = ${parsedBody.team}`
+  });
+  const submissions = submissionRows.map(aSubmission => {
+        console.log(aSubmission);
+        return {
+            name: aSubmission.objectivename,
+            team: aSubmission.team,
+            media: aSubmission.media
+        };
+  });
+  */
+
   await promisify(sheet.addRow)(parsedBody);
   response.body = JSON.stringify({status:"success"});
   return response;
@@ -118,7 +115,7 @@ module.exports.huntObjectives = async (event, context) =>
   const doc = new GoogleSpreadSheet(SHEETS_KEY);
   await promisify(doc.useServiceAccountAuth)(creds);
   const info  = await promisify(doc.getInfo)();
-  console.log("WORKSHEETS: ",JSON.stringify(info.worksheets,null,2));
+  //console.log("WORKSHEETS: ",JSON.stringify(info.worksheets,null,2));
   const objectiveSheet = info.worksheets[0];
   const objectiveRows  = await promisify(objectiveSheet.getRows)({
     offset: 1
@@ -128,6 +125,7 @@ module.exports.huntObjectives = async (event, context) =>
     query: `team = ${team}`
   });
   const submissions = submissionRows.map(aSubmission => {
+        console.log(aSubmission);
         return {
             name: aSubmission.objectivename,
             team: aSubmission.team,

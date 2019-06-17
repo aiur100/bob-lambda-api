@@ -6,12 +6,12 @@ const APP_CORS_HEADER = {
     "Content-Type" : "text/plain",
     "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
     "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS
-  };
-  const response = {
+};
+const response = {
     statusCode: 200,
     headers: APP_CORS_HEADER,
     body: ""
-  };
+};
 
 module.exports.huntMediaUploadUrl = async (event, context) => 
 {
