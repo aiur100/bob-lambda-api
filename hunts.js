@@ -88,19 +88,18 @@ module.exports.addHuntSubmission = async (event,context) =>
   const info  = await promisify(doc.getInfo)();
   const sheet = info.worksheets[2];
 
-  /*
+  
   const submissionRows  = await promisify(sheet.getRows)({
     query: `team = ${parsedBody.team}`
   });
-  const submissions = submissionRows.map(aSubmission => {
-        console.log(aSubmission);
-        return {
-            name: aSubmission.objectivename,
-            team: aSubmission.team,
-            media: aSubmission.media
-        };
+  submissionRows.forEach(aSubmission => {
+    console.log(`PREVIOUS SUBMISSION:`,aSubmission.objectivename,'CURRENT SUBMISSION:',parsedBody.objectivename);
+    if(aSubmission.objectivename.trim() === parsedBody.objectivename.trim())
+    {
+      console.log("DUPLICATE FOUND: \n",aSubmission);
+      aSubmission.del();
+    }    
   });
-  */
 
   await promisify(sheet.addRow)(parsedBody);
   response.body = JSON.stringify({status:"success"});
@@ -125,7 +124,6 @@ module.exports.huntObjectives = async (event, context) =>
     query: `team = ${team}`
   });
   const submissions = submissionRows.map(aSubmission => {
-        console.log(aSubmission);
         return {
             name: aSubmission.objectivename,
             team: aSubmission.team,
