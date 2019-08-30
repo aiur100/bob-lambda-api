@@ -1,3 +1,5 @@
+org: crhill
+app: bob-race
 service: bob-hunts # NOTE: update this with your service name
 
 custom:

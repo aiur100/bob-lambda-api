@@ -22,7 +22,8 @@ function huntObjects(rows)
       return {
         name: currentRow.nameofobjective,
         description: currentRow.descriptionofobjective,
-        media: currentRow.mediatype
+        media: currentRow.mediatype,
+        show: currentRow.show
       };
     });
 }
@@ -107,6 +108,10 @@ module.exports.addHuntSubmission = async (event,context) =>
 
 }
 
+/**
+ * Test this with ... 
+ * sls invoke local -f huntObjectives -l --data '{"queryStringParameters":{"team":"A"}}'
+ */
 module.exports.huntObjectives = async (event, context) => 
 {
 
