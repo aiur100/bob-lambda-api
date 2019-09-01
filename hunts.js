@@ -125,7 +125,6 @@ module.exports.huntObjectives = async (event, context) =>
     offset: 1,
     query: `show = TRUE`
   });
-  const valueForShow = "TRUE";
   const submissionsSheet = info.worksheets[2];
   const submissionRows  = await promisify(submissionsSheet.getRows)({
     query: `team = ${team}`
