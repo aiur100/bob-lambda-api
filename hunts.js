@@ -62,7 +62,7 @@ module.exports.doesHunterExist = async (event, context) =>
   while(listOfHunters.length > 0)
   {
     let user = listOfHunters.pop();
-    if(user.email === parsedBody.email)
+    if(user.email === parsedBody.email.toLowerCase().trim())
     {
       result.exists = true;
       result = {...result,...user};
