@@ -75,7 +75,7 @@ module.exports.doesHunterExist = async (event, context) =>
   while(listOfHunters.length > 0)
   {
     let user = listOfHunters.pop();
-    if(user.email === parsedBody.email.toLowerCase().trim())
+    if(user.email.toLowerCase().trim() === parsedBody.email.toLowerCase().trim())
     {
       result.exists = true;
       result = {...result,...user};
@@ -85,6 +85,7 @@ module.exports.doesHunterExist = async (event, context) =>
   }
 
   response.body = JSON.stringify(result);
+  console.log("RESPONSE SENT TO USER: ",response);
   return response;
 }
 
@@ -104,7 +105,7 @@ module.exports.addHuntSubmission = async (event,context) =>
 
   
   const submissionRows  = await promisify(sheet.getRows)({
-    query: `team = ${parsedBody.team}`
+    query: `team = "${parsedBody.team}"`
   });
   submissionRows.forEach(aSubmission => {
     console.log(`PREVIOUS SUBMISSION:`,aSubmission.objectivename,'CURRENT SUBMISSION:',parsedBody.objectivename);
@@ -128,7 +129,9 @@ module.exports.addHuntSubmission = async (event,context) =>
 module.exports.huntObjectives = async (event, context) => 
 {
 
-  const team = event.queryStringParameters.team;
+  const team = event.queryStringParameters.team.trim();
+  console.log("REQUEST RECEIVED FOR TEAM:",team);
+
   const doc = new GoogleSpreadSheet(SHEETS_KEY);
   await promisify(doc.useServiceAccountAuth)(creds);
   const info  = await promisify(doc.getInfo)();
@@ -140,7 +143,7 @@ module.exports.huntObjectives = async (event, context) =>
   });
   const submissionsSheet = info.worksheets[2];
   const submissionRows  = await promisify(submissionsSheet.getRows)({
-    query: `team = ${team}`
+    query: `team = "${team}"`
   });
   const submissions = submissionRows.map(aSubmission => {
         return {
@@ -149,6 +152,9 @@ module.exports.huntObjectives = async (event, context) =>
             media: aSubmission.media
         };
   });
+
+  console.log("SUBMISSIONS BY TEAM: ",submissions);
+
   response.body = JSON.stringify({
     objectives: huntObjects(objectiveRows),
     submitted: submissions
