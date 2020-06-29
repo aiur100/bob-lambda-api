@@ -6,7 +6,7 @@ This is a set of lambda functions that act as the API/backend to the B.O.B. scav
 ## Requirements
 * NodeJS 8 or higher 
 * Serverless framework (https://serverless.com/)
-* An AWS account with a AWS key and secret attached to a full admin user. That user must be in your ~/.aws/credentials file under the profile "pasley_hill_admin".  
+* An AWS account with a AWS key and secret attached to a full admin user. That user must be in your ~/.aws/credentials file under the profile "<my-profile>".  
 * You also will need a env.yml file provided to you with the proper credentials.
 
 ## Once you have all the requirements listed above...
