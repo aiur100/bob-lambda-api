@@ -12,6 +12,6 @@
     "aws-sdk": "^2.472.0",
     "google-spreadsheet": "^2.0.7",
     "googleapis": "^40.0.0",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.7"
   }
 }
